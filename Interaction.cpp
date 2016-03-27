@@ -8,6 +8,8 @@ Interaction::Interaction() {
 GLfloat Interaction::spin = 0;
 float Interaction::spin_degree = DEFAULT_SPIN_DEGREE;
 bool Interaction::spinning = false;
+double Interaction::eye_x = 0;
+double Interaction::eye_z = 35;
 
 int Interaction::cur_x = 0;
 int Interaction::cur_y = 0;
@@ -20,6 +22,11 @@ void Interaction::spinDisplay() {
 	if (spin > 360) {
 		spin = spin - 360;
 	}
+	spin = -spin * PI / 180.0;
+	// calculate the eye's position
+	double old_eye_x = eye_x;
+	eye_x = cos(spin) * eye_x + sin(spin) * eye_z;
+	eye_z = -sin(spin) * old_eye_x + cos(spin) * eye_z;
 	glutPostRedisplay();
 }
 

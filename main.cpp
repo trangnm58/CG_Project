@@ -4,13 +4,20 @@
 
 #include "FileHelper.h"
 #include "Interaction.h"
+#include "TextureHelper.h"
 /* ----------------------------------------------------------------------- */
 
 const string FILE_NAME = "face.dat";
+const int windowWidth = 750;
+const int windowHeight = 720;
 
 float* vertices; // array of all vertices' coordinates that were given
 float* rightSideVertices; // array of all vertices' coordinates symetrical to vertices
-int* connections; // array of connections between vertices that were given
+unsigned int* connections; // array of connections between vertices that were given
+
+float* textureCoords; // array of all textures' coordinates
+
+GLuint texture; //The texture
 
 // Use FileHelper to open and read the data file into 3 defined arrays
 void readFaceData() {
@@ -23,6 +30,14 @@ void readFaceData() {
 		rightSideVertices[i] = -vertices[i];
 		rightSideVertices[i+1] = vertices[i+1];
 		rightSideVertices[i+2] = vertices[i+2];
+	}
+	
+	// create texture coordinates array
+	textureCoords = new float[FileHelper::numOfVertices * 3];
+	for (int i=0; i < FileHelper::numOfVertices * 3; i += 3) {
+		textureCoords[i] = vertices[i] / 8;
+		textureCoords[i+1] = vertices[i+1] / 8;
+		textureCoords[i+2] = vertices[i+2] / 8;
 	}
 }
 
@@ -37,50 +52,63 @@ void instruction() {
 void init()  {
 	glClearColor(1, 1, 1, 0);
 	glColor3f(0.8, 0.6, 0.5);
+	glShadeModel(GL_FLAT);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_NORMALIZE);
+	glEnable(GL_COLOR_MATERIAL);
+	
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	
+	TextureHelper textureHelper;
+	texture = textureHelper.getTexture("face_texture.bmp");
 }
 
-void setWindow(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble f, GLdouble n) {
+void setWindow() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(left, right, bottom, top, f, n);
+	gluPerspective(40, windowWidth / windowHeight, -10, 10);
 }
 
 void reshape(int w, int h) {
 	glViewport(0, 0, (GLsizei) w, (GLsizei) h);
-	setWindow(-10, 10, -10, 10, -10, 4);
+	setWindow();
 }
 
 /* ----------------------------------------------------------------------- */
 
 void display()  {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    setWindow();
     
-    setWindow(-10, 10, -10, 10, -10, 4);
-    
-    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnable(GL_TEXTURE_2D);
 	
 	glPushMatrix();
-		// rotate spin degree around y (0,1,0) axis
-		glRotatef(Interaction::spin, 0, 1, 0);
+		gluLookAt(Interaction::eye_x, 0, Interaction::eye_z, 0, 0, 2, 0, 1, 0);
 		
+		// texture pointer of left vertices
+		glTexCoordPointer(3, GL_FLOAT, 0, textureCoords);
+		// vertex pointer of left vertices
 		glVertexPointer(3, GL_FLOAT, 0, vertices);
+		
+		
 		for (int i=0; i < FileHelper::numOfConnections * 3; i += 3) {
-			glBegin(GL_LINE_LOOP);
+			// GL_LINE_LOOP
+			glBegin(GL_TRIANGLES);
 				glArrayElement(connections[i]);
 				glArrayElement(connections[i+1]);
 				glArrayElement(connections[i+2]);
 			glEnd();
 		}
-		
+		// draw all right vertices
 		glVertexPointer(3, GL_FLOAT, 0, rightSideVertices);
 		for (int i=0; i < FileHelper::numOfConnections * 3; i += 3) {
-			glBegin(GL_LINE_LOOP);
+			glBegin(GL_TRIANGLES);
 				glArrayElement(connections[i]);
 				glArrayElement(connections[i+1]);
 				glArrayElement(connections[i+2]);
 			glEnd();
 		}
-	// go back to where you were
 	glPopMatrix();
     
 	glFlush();
@@ -95,7 +123,7 @@ int main(int argc, char *argv[])  {
 	// Set the mode to draw in.
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 	// Set the window size in screen pixels.
-	glutInitWindowSize(720, 750);
+	glutInitWindowSize(windowWidth, windowHeight);
 	// Set the window position in screen pixels.
 	glutInitWindowPosition(600, 0);
 	// Create the window.

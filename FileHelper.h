@@ -10,11 +10,10 @@ class FileHelper {
 	public:
 		FileHelper();
 
-		void ReadData(string, float*&, int*&);
+		void ReadData(string, float*&, unsigned int*&);
 		
 		static int numOfVertices;
 		static int numOfConnections;
-		
 };
 
 #endif // FileHelper_H
