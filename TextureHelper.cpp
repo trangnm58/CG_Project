@@ -37,6 +37,7 @@ GLuint TextureHelper::getTexture(string fileName) {
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	
 	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, textureWidth, textureHeight, GL_RGB, GL_UNSIGNED_BYTE, data);
 	
 	free(data);

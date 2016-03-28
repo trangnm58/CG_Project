@@ -11,10 +11,8 @@ const string FILE_NAME = "face.dat";
 const int windowWidth = 750;
 const int windowHeight = 720;
 
-float* vertices; // array of all vertices' coordinates that were given
-float* rightSideVertices; // array of all vertices' coordinates symetrical to vertices
-unsigned int* connections; // array of connections between vertices that were given
-
+float* vertices; // array of all vertices' coordinates
+unsigned int* connections; // array of connections between vertices
 float* textureCoords; // array of all textures' coordinates
 
 GLuint texture; //The texture
@@ -24,20 +22,12 @@ void readFaceData() {
 	FileHelper fileHelper;
 	fileHelper.ReadData(FILE_NAME, vertices, connections);
 	
-	// create the vertex array for the right side of the face
-	rightSideVertices = new float[FileHelper::numOfVertices * 3];
-	for (int i=0; i < FileHelper::numOfVertices * 3; i += 3) {
-		rightSideVertices[i] = -vertices[i];
-		rightSideVertices[i+1] = vertices[i+1];
-		rightSideVertices[i+2] = vertices[i+2];
-	}
-	
 	// create texture coordinates array
-	textureCoords = new float[FileHelper::numOfVertices * 3];
-	for (int i=0; i < FileHelper::numOfVertices * 3; i += 3) {
-		textureCoords[i] = vertices[i] / 8;
-		textureCoords[i+1] = vertices[i+1] / 8;
-		textureCoords[i+2] = vertices[i+2] / 8;
+	textureCoords = new float[FileHelper::numOfVertices * 3 * 2];
+	for (int i=0; i < FileHelper::numOfVertices * 3 * 2; i += 3) {
+		textureCoords[i] = vertices[i] / 9.5 + 0.5;
+		textureCoords[i+1] = vertices[i+1] / 12 + 0.42;
+		textureCoords[i+2] = 0;
 	}
 }
 
@@ -52,10 +42,11 @@ void instruction() {
 void init()  {
 	glClearColor(1, 1, 1, 0);
 	glColor3f(0.8, 0.6, 0.5);
-	glShadeModel(GL_FLAT);
+	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_NORMALIZE);
-	glEnable(GL_COLOR_MATERIAL);
+//	glEnable(GL_NORMALIZE);
+//	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_TEXTURE_2D);
 	
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -67,7 +58,9 @@ void init()  {
 void setWindow() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(40, windowWidth / windowHeight, -10, 10);
+	gluPerspective(40, windowWidth / windowHeight, 10, -10);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 }
 
 void reshape(int w, int h) {
@@ -80,17 +73,13 @@ void reshape(int w, int h) {
 void display()  {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     setWindow();
-    
-    glEnable(GL_TEXTURE_2D);
-	
 	glPushMatrix();
 		gluLookAt(Interaction::eye_x, 0, Interaction::eye_z, 0, 0, 2, 0, 1, 0);
 		
-		// texture pointer of left vertices
+		// texture pointer of vertices
 		glTexCoordPointer(3, GL_FLOAT, 0, textureCoords);
-		// vertex pointer of left vertices
+		// vertex pointer of vertices
 		glVertexPointer(3, GL_FLOAT, 0, vertices);
-		
 		
 		for (int i=0; i < FileHelper::numOfConnections * 3; i += 3) {
 			// GL_LINE_LOOP
@@ -99,14 +88,11 @@ void display()  {
 				glArrayElement(connections[i+1]);
 				glArrayElement(connections[i+2]);
 			glEnd();
-		}
-		// draw all right vertices
-		glVertexPointer(3, GL_FLOAT, 0, rightSideVertices);
-		for (int i=0; i < FileHelper::numOfConnections * 3; i += 3) {
+			// draw all right vertices
 			glBegin(GL_TRIANGLES);
-				glArrayElement(connections[i]);
-				glArrayElement(connections[i+1]);
-				glArrayElement(connections[i+2]);
+				glArrayElement(connections[i + FileHelper::numOfConnections * 3]);
+				glArrayElement(connections[i+1 + FileHelper::numOfConnections * 3]);
+				glArrayElement(connections[i+2 + FileHelper::numOfConnections * 3]);
 			glEnd();
 		}
 	glPopMatrix();
