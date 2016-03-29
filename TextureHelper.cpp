@@ -14,30 +14,28 @@ GLuint TextureHelper::getTexture(string fileName) {
 	GLuint texture;
 	unsigned char* data;
 	
-	FILE * file;
-	file = fopen( fileName.c_str(), "rb" );
+	FILE* file;
+	file = fopen(fileName.c_str(), "rb");
 
 	if (file == NULL) {
+		cout << "Can not open " << fileName << " file" << endl;
 		return 0;
 	}
 	data = (unsigned char*) malloc(textureWidth * textureHeight * 3);
 	fread(data, textureWidth * textureHeight * 3, 1, file);
 	fclose(file);
 	
-	for(int i = 0; i < textureWidth * textureHeight ; i++) {
-	   int index = i * 3;
-	   unsigned char B, R;
-	   B = data[index];
-	   R = data[index + 2];
-	
-	   data[index] = R;
-	   data[index + 2] = B;
+	for(int i = 0; i < textureWidth * textureHeight; i++) {
+		int index = i * 3;
+		unsigned char temp;
+		temp = data[index];
+		data[index] = data[index + 2];
+		data[index + 2] = temp;
 	}
 	
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	
 	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, textureWidth, textureHeight, GL_RGB, GL_UNSIGNED_BYTE, data);
 	
 	free(data);

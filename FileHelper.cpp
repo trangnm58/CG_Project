@@ -11,7 +11,7 @@ void FileHelper::ReadData(string fileName, float* &vertices, unsigned int* &conn
 	inStream.open(fileName.c_str());
 	
 	if (!inStream) {
-		cout << "Can not open this file" << endl;
+		cout << "Can not open " << fileName << " file" << endl;
 	} else {
 		// read vertices
 		inStream >> FileHelper::numOfVertices;

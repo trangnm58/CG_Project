@@ -2,6 +2,7 @@
 #define TextureHelper_H
 
 #include <fstream>
+#include <iostream>
 #include <GL/glut.h>
 
 using namespace std;
