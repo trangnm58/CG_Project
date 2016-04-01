@@ -22,13 +22,39 @@ void readFaceData() {
 	FileHelper fileHelper;
 	fileHelper.ReadData(FILE_NAME, vertices, connections);
 	
-	// create texture coordinates array
 	textureCoords = new float[FileHelper::numOfVertices * 3 * 2];
-	for (int i=0; i < FileHelper::numOfVertices * 3 * 2; i += 3) {
-		textureCoords[i] = vertices[i] / 9.5 + 0.5;
-		textureCoords[i+1] = vertices[i+1] / 12 + 0.42;
-		textureCoords[i+2] = 0;
-	}
+	
+	/* use predefined texture coordinates */
+//	ifstream inStream;
+//	inStream.open("trytex.txt");
+//	int numOfTex = 1319;
+//	if (!inStream) {
+//		cout << "Can not open " << "trytex.txt" << " file" << endl;
+//	} else {
+//		textureCoords = new float[numOfTex * 3 * 2];
+//		for (int i=0; i < numOfTex * 3; i += 3) {
+//			inStream >> textureCoords[i];
+//			inStream >> textureCoords[i + 1];
+//			textureCoords[i+2] = 0;
+//		}
+//		for (int i=numOfTex * 2; i < numOfTex * 2 * 2; i += 2) {
+//			textureCoords[i] = textureCoords[i - numOfTex * 2];
+//			textureCoords[i + 1] = textureCoords[i + 1 - numOfTex * 2];
+//		}
+//	}
+//	inStream.close();
+
+	// create texture coordinates array using distance from the nose
+	// the front is "0.000 0.533 9.067"
+	// the top is "0.000 6.798 4.331"
+	for (int i=0; i < FileHelper::numOfVertices * 3; i += 3) {
+		if (abs(vertices[i]) > abs(9.067 - vertices[i + 2]) - 1.1) {
+			textureCoords[i] = textureCoords[i + FileHelper::numOfVertices * 3] =  vertices[i] / 10; 
+		} else {
+			textureCoords[i] = textureCoords[i + FileHelper::numOfVertices * 3] =  (vertices[i + 2] - 9.067) / 11.2;
+		}
+		textureCoords[i+1] = textureCoords[i+1 + FileHelper::numOfVertices * 3] = vertices[i+1] / 16.5 + 0.3;
+	}	
 }
 
 void instruction() {
@@ -42,23 +68,21 @@ void instruction() {
 void init()  {
 	glClearColor(1, 1, 1, 0);
 	glColor3f(0.8, 0.6, 0.5);
-	glShadeModel(GL_SMOOTH);
+	glShadeModel(GL_FLAT);
 	glEnable(GL_DEPTH_TEST);
-//	glEnable(GL_NORMALIZE);
-//	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_TEXTURE_2D);
 	
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	
 	TextureHelper textureHelper;
-	texture = textureHelper.getTexture("face_texture.bmp");
+	texture = textureHelper.getTexture("face.bmp");
 }
 
 void setWindow() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(40, windowWidth / windowHeight, 10, -10);
+	gluPerspective(40, windowWidth / windowHeight, 10, -1);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
@@ -74,7 +98,7 @@ void display()  {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     setWindow();
 	glPushMatrix();
-		gluLookAt(Interaction::eye_x, 0, Interaction::eye_z, 0, 0, 2, 0, 1, 0);
+		gluLookAt(Interaction::eye_x, 0, Interaction::eye_z, 0, 0, 3, 0, 1, 0);
 		
 		// texture pointer of vertices
 		glTexCoordPointer(3, GL_FLOAT, 0, textureCoords);
@@ -85,14 +109,14 @@ void display()  {
 			// GL_LINE_LOOP
 			glBegin(GL_TRIANGLES);
 				glArrayElement(connections[i]);
-				glArrayElement(connections[i+1]);
-				glArrayElement(connections[i+2]);
+				glArrayElement(connections[i + 1]);
+				glArrayElement(connections[i + 2]);
 			glEnd();
 			// draw all right vertices
 			glBegin(GL_TRIANGLES);
 				glArrayElement(connections[i + FileHelper::numOfConnections * 3]);
-				glArrayElement(connections[i+1 + FileHelper::numOfConnections * 3]);
-				glArrayElement(connections[i+2 + FileHelper::numOfConnections * 3]);
+				glArrayElement(connections[i + 1 + FileHelper::numOfConnections * 3]);
+				glArrayElement(connections[i + 2 + FileHelper::numOfConnections * 3]);
 			glEnd();
 		}
 	glPopMatrix();
