@@ -6,7 +6,6 @@
 #include "Interaction.h"
 #include "TextureHelper.h"
 /* ----------------------------------------------------------------------- */
-
 const string FILE_NAME = "face.dat";
 const int windowWidth = 750;
 const int windowHeight = 720;
@@ -16,45 +15,39 @@ unsigned int* connections; // array of connections between vertices
 float* textureCoords; // array of all textures' coordinates
 
 GLuint texture; //The texture
+/* ----------------------------------------------------------------------- */
 
 // Use FileHelper to open and read the data file into 3 defined arrays
 void readFaceData() {
 	FileHelper fileHelper;
 	fileHelper.ReadData(FILE_NAME, vertices, connections);
-	
-	textureCoords = new float[FileHelper::numOfVertices * 3 * 2];
-	
-	/* use predefined texture coordinates */
-//	ifstream inStream;
-//	inStream.open("trytex.txt");
-//	int numOfTex = 1319;
-//	if (!inStream) {
-//		cout << "Can not open " << "trytex.txt" << " file" << endl;
-//	} else {
-//		textureCoords = new float[numOfTex * 3 * 2];
-//		for (int i=0; i < numOfTex * 3; i += 3) {
-//			inStream >> textureCoords[i];
-//			inStream >> textureCoords[i + 1];
-//			textureCoords[i+2] = 0;
-//		}
-//		for (int i=numOfTex * 2; i < numOfTex * 2 * 2; i += 2) {
-//			textureCoords[i] = textureCoords[i - numOfTex * 2];
-//			textureCoords[i + 1] = textureCoords[i + 1 - numOfTex * 2];
-//		}
-//	}
-//	inStream.close();
+}
 
-	// create texture coordinates array using distance from the nose
-	// the front is "0.000 0.533 9.067"
-	// the top is "0.000 6.798 4.331"
-	for (int i=0; i < FileHelper::numOfVertices * 3; i += 3) {
-		if (abs(vertices[i]) > abs(9.067 - vertices[i + 2]) - 1.1) {
-			textureCoords[i] = textureCoords[i + FileHelper::numOfVertices * 3] =  vertices[i] / 10; 
-		} else {
-			textureCoords[i] = textureCoords[i + FileHelper::numOfVertices * 3] =  (vertices[i + 2] - 9.067) / 11.2;
+// Find the z coordinate of the front most point
+float findNoseZ() {
+	float nose_z = vertices[2]; // the initial value
+	for (int i=0; i < FileHelper::numOfVertices; i++) {
+		if (vertices[i*3 + 2] > nose_z) {
+			nose_z = vertices[i*3 + 2];
 		}
-		textureCoords[i+1] = textureCoords[i+1 + FileHelper::numOfVertices * 3] = vertices[i+1] / 16.5 + 0.3;
-	}	
+	}
+	return nose_z;
+}
+
+// Generate texture coordinates from vertices' coordinates
+void generateTextureCoords() {
+	// create texture coordinates array using distance from the nose
+	float nose_z = findNoseZ(); // get z coordinate of the nose
+
+	textureCoords = new float[FileHelper::numOfVertices * 3 * 2];
+	for (int i=0; i < FileHelper::numOfVertices * 3; i += 3) {
+		if (abs(vertices[i]) > abs(nose_z - vertices[i + 2]) - 1.1) {
+			textureCoords[i] = textureCoords[i + FileHelper::numOfVertices * 3] = vertices[i] / 10; 
+		} else {
+			textureCoords[i] = textureCoords[i + FileHelper::numOfVertices * 3] = (vertices[i + 2] - nose_z) / 11.2;
+		}
+		textureCoords[i + 1] = textureCoords[i+1 + FileHelper::numOfVertices * 3] = vertices[i + 1] / 16.5 + 0.3;
+	}
 }
 
 void instruction() {
@@ -62,9 +55,7 @@ void instruction() {
 	cout << "- Drag the mouse to rotate the head manually." << endl;
 	cout << "- Press Space Bar to toggle the rotation." << endl;
 }
-
 /* ----------------------------------------------------------------------- */
-
 void init()  {
 	glClearColor(1, 1, 1, 0);
 	glColor3f(0.8, 0.6, 0.5);
@@ -75,6 +66,7 @@ void init()  {
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	
+	// get a texture from 'face.bmp' file
 	TextureHelper textureHelper;
 	texture = textureHelper.getTexture("face.bmp");
 }
@@ -91,22 +83,19 @@ void reshape(int w, int h) {
 	glViewport(0, 0, (GLsizei) w, (GLsizei) h);
 	setWindow();
 }
-
 /* ----------------------------------------------------------------------- */
-
 void display()  {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     setWindow();
 	glPushMatrix();
 		gluLookAt(Interaction::eye_x, 0, Interaction::eye_z, 0, 0, 3, 0, 1, 0);
-		
+
 		// texture pointer of vertices
 		glTexCoordPointer(3, GL_FLOAT, 0, textureCoords);
 		// vertex pointer of vertices
 		glVertexPointer(3, GL_FLOAT, 0, vertices);
-		
+
 		for (int i=0; i < FileHelper::numOfConnections * 3; i += 3) {
-			// GL_LINE_LOOP
 			glBegin(GL_TRIANGLES);
 				glArrayElement(connections[i]);
 				glArrayElement(connections[i + 1]);
@@ -124,9 +113,7 @@ void display()  {
 	glFlush();
     glutSwapBuffers();
 }
-
 /* ----------------------------------------------------------------------- */
-
 int main(int argc, char *argv[])  {
 	// Initialize GLUT.
 	glutInit(&argc, argv);
@@ -144,9 +131,10 @@ int main(int argc, char *argv[])  {
 	
 	// print out the instruction
 	instruction();
-	
 	// read the data from face.dat
 	readFaceData();
+	// generate the texture coordinates
+	generateTextureCoords();
 	
 	// Set the callback funcion to call when we need to draw something.
 	glutDisplayFunc(display);
@@ -162,5 +150,5 @@ int main(int argc, char *argv[])  {
 	// Now that we have set everything up, loop responding to events.
 	glutMainLoop();
 }
-
 /* ----------------------------------------------------------------------- */
+

@@ -22,8 +22,7 @@ class Interaction {
 		static int last_x, last_y, cur_x, cur_y;
 		static bool mouseDown;
 
-		static void spinDisplay();
-		
+		static void spinDisplay();		
 };
 
 #endif // Interaction_H

@@ -42,3 +42,4 @@ void FileHelper::ReadData(string fileName, float* &vertices, unsigned int* &conn
 	}
 	inStream.close();
 }
+
