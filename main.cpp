@@ -10,11 +10,11 @@ const string FILE_NAME = "face.dat";
 const int windowWidth = 750;
 const int windowHeight = 720;
 
-float* vertices; // array of all vertices' coordinates
+float* vertices; // array of all vertex coordinates
 unsigned int* connections; // array of connections between vertices
-float* textureCoords; // array of all textures' coordinates
+float* textureCoords; // array of all texture coordinates
 
-GLuint texture; //The texture
+GLuint texture; //The texture's name
 /* ----------------------------------------------------------------------- */
 
 // Use FileHelper to open and read the data file into 3 defined arrays
@@ -34,38 +34,38 @@ float findNoseZ() {
 	return nose_z;
 }
 
-// Generate texture coordinates from vertices' coordinates
+// Generate texture coordinates from vertex coordinates
 void generateTextureCoords() {
 	// create texture coordinates array using distance from the nose
 	float nose_z = findNoseZ(); // get z coordinate of the nose
 
 	textureCoords = new float[FileHelper::numOfVertices * 3 * 2];
 	for (int i=0; i < FileHelper::numOfVertices * 3; i += 3) {
-		if (abs(vertices[i]) > abs(nose_z - vertices[i + 2]) - 1.1) {
-			textureCoords[i] = textureCoords[i + FileHelper::numOfVertices * 3] = vertices[i] / 10; 
+		if (abs(nose_z - vertices[i + 2]) < 2.5) {
+			textureCoords[i] = textureCoords[i + FileHelper::numOfVertices * 3] = abs(vertices[i]) / 10 + 0.025;
+			textureCoords[i + 1] = textureCoords[i+1 + FileHelper::numOfVertices * 3] = vertices[i + 1] / 16.5 + 0.3;
 		} else {
-			textureCoords[i] = textureCoords[i + FileHelper::numOfVertices * 3] = (vertices[i + 2] - nose_z) / 11.2;
+			textureCoords[i] = textureCoords[i + FileHelper::numOfVertices * 3] = (nose_z - vertices[i + 2]) / 11 + 0.025;
+			textureCoords[i + 1] = textureCoords[i+1 + FileHelper::numOfVertices * 3] = vertices[i + 1] / 15.8 + 0.28;
 		}
-		textureCoords[i + 1] = textureCoords[i+1 + FileHelper::numOfVertices * 3] = vertices[i + 1] / 16.5 + 0.3;
 	}
 }
 
 void instruction() {
 	cout << endl << endl << "************** INSTRUCTIONS **************" << endl << endl;
-	cout << "- Drag the mouse to rotate the head manually." << endl;
+	cout << "- Drag the mouse left and right to rotate the head manually." << endl;
 	cout << "- Press Space Bar to toggle the rotation." << endl;
 }
 /* ----------------------------------------------------------------------- */
 void init()  {
 	glClearColor(1, 1, 1, 0);
-	glColor3f(0.8, 0.6, 0.5);
-	glShadeModel(GL_FLAT);
+	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
-	
+
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
-	
+
 	// get a texture from 'face.bmp' file
 	TextureHelper textureHelper;
 	texture = textureHelper.getTexture("face.bmp");
@@ -87,29 +87,29 @@ void reshape(int w, int h) {
 void display()  {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     setWindow();
-	glPushMatrix();
-		gluLookAt(Interaction::eye_x, 0, Interaction::eye_z, 0, 0, 3, 0, 1, 0);
+	gluLookAt(Interaction::eye_x, 0, Interaction::eye_z, 0, 0, 3, 0, 1, 0);
 
-		// texture pointer of vertices
-		glTexCoordPointer(3, GL_FLOAT, 0, textureCoords);
-		// vertex pointer of vertices
-		glVertexPointer(3, GL_FLOAT, 0, vertices);
+	// texture pointer of vertices
+	glTexCoordPointer(3, GL_FLOAT, 0, textureCoords);
+	// vertex pointer of vertices
+	glVertexPointer(3, GL_FLOAT, 0, vertices);
+	
+	// draw the face
+	for (int i=0; i < FileHelper::numOfConnections * 3; i += 3) {
+		// draw all left vertices
+		glBegin(GL_TRIANGLES);
+			glArrayElement(connections[i]);
+			glArrayElement(connections[i + 1]);
+			glArrayElement(connections[i + 2]);
+		glEnd();
+		// draw all right vertices
+		glBegin(GL_TRIANGLES);
+			glArrayElement(connections[i + FileHelper::numOfConnections * 3]);
+			glArrayElement(connections[i + 1 + FileHelper::numOfConnections * 3]);
+			glArrayElement(connections[i + 2 + FileHelper::numOfConnections * 3]);
+		glEnd();
+	}
 
-		for (int i=0; i < FileHelper::numOfConnections * 3; i += 3) {
-			glBegin(GL_TRIANGLES);
-				glArrayElement(connections[i]);
-				glArrayElement(connections[i + 1]);
-				glArrayElement(connections[i + 2]);
-			glEnd();
-			// draw all right vertices
-			glBegin(GL_TRIANGLES);
-				glArrayElement(connections[i + FileHelper::numOfConnections * 3]);
-				glArrayElement(connections[i + 1 + FileHelper::numOfConnections * 3]);
-				glArrayElement(connections[i + 2 + FileHelper::numOfConnections * 3]);
-			glEnd();
-		}
-	glPopMatrix();
-    
 	glFlush();
     glutSwapBuffers();
 }
@@ -118,20 +118,20 @@ int main(int argc, char *argv[])  {
 	// Initialize GLUT.
 	glutInit(&argc, argv);
 	// Set the mode to draw in.
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 	// Set the window size in screen pixels.
 	glutInitWindowSize(windowWidth, windowHeight);
 	// Set the window position in screen pixels.
 	glutInitWindowPosition(600, 0);
 	// Create the window.
-	glutCreateWindow("Face Texturing");
+	glutCreateWindow("Big Project: Face Texturing - Group 3");
 	
 	// Initialize some things.
 	init();
 	
 	// print out the instruction
 	instruction();
-	// read the data from face.dat
+	// read the data from "face.dat"
 	readFaceData();
 	// generate the texture coordinates
 	generateTextureCoords();

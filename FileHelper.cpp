@@ -36,8 +36,10 @@ void FileHelper::ReadData(string fileName, float* &vertices, unsigned int* &conn
 			inStream >> connections[i];
 		}
 		// append right face connections to 'connections' array
-		for (int i=0; i < FileHelper::numOfConnections * 3; i++) {
-			connections[i + FileHelper::numOfConnections * 3] = connections[i] + FileHelper::numOfVertices;
+		for (int i=0; i < FileHelper::numOfConnections * 3; i += 3) {
+			connections[i + FileHelper::numOfConnections * 3] = connections[i+2] + FileHelper::numOfVertices;
+			connections[i+1 + FileHelper::numOfConnections * 3] = connections[i+1] + FileHelper::numOfVertices;
+			connections[i+2 + FileHelper::numOfConnections * 3] = connections[i] + FileHelper::numOfVertices;
 		}
 	}
 	inStream.close();

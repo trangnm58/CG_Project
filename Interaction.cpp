@@ -1,6 +1,6 @@
 #include "Interaction.h"
 
-const float DEFAULT_SPIN_DEGREE = 0.1;
+const float DEFAULT_SPIN_DEGREE = 0.3;
 
 Interaction::Interaction() {
 }

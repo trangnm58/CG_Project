@@ -32,8 +32,13 @@ GLuint TextureHelper::getTexture(string fileName) {
 		data[index + 2] = temp;
 	}
 	
+	// get 1 name for the texture
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, textureWidth, textureHeight, GL_RGB, GL_UNSIGNED_BYTE, data);
 

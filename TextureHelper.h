@@ -11,7 +11,7 @@ class TextureHelper {
 	public:
 		TextureHelper();
 		
-		GLuint getTexture(string);
+		GLuint getTexture(string fileName);
 		
 		int textureWidth;
 		int textureHeight;
