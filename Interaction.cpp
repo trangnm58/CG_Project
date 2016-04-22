@@ -11,6 +11,8 @@ bool Interaction::spinning = false;
 double Interaction::eye_x = 0;
 double Interaction::eye_z = 35;
 
+double Interaction::zoom = 0.2;
+
 int Interaction::cur_x = 0;
 int Interaction::cur_y = 0;
 int Interaction::last_x = 0;
@@ -54,6 +56,12 @@ void Interaction::mouseMotion(int x, int y) {
 		cur_y = y;
 
 		int distance = cur_x - last_x;
+		int direction = cur_y - last_y;
+
+		if(direction < -1)
+			zoom -= 0.2;
+		else if(direction > 1)
+			zoom += 0.2;
 		// calculate the spin degree depends on distance
 		spin_degree = distance * 0.01;
 		spinDisplay();

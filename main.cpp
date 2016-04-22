@@ -87,7 +87,7 @@ void reshape(int w, int h) {
 void display()  {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     setWindow();
-	gluLookAt(Interaction::eye_x, 0, Interaction::eye_z, 0, 0, 3, 0, 1, 0);
+	gluLookAt(Interaction::eye_x, Interaction::zoom, Interaction::eye_z, 0, 0, 3, 0, 1, 0);
 
 	// texture pointer of vertices
 	glTexCoordPointer(3, GL_FLOAT, 0, textureCoords);
