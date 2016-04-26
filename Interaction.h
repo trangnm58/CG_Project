@@ -18,7 +18,6 @@ class Interaction {
 		static float spin_degree;
 		static bool spinning;
 		static double eye_x, eye_z;
-		static double zoom;
 		
 		static int last_x, last_y, cur_x, cur_y;
 		static bool mouseDown;
